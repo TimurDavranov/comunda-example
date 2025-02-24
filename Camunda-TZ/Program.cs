@@ -62,6 +62,7 @@ builder.Services.AddAuthentication(options =>
         options.Cookie.SameSite = SameSiteMode.Lax;
         options.Cookie.HttpOnly = true;
         options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+        options.Cookie.Domain = "144.91.122.220";
     })
     .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
     {
