@@ -56,7 +56,13 @@ builder.Services.AddAuthentication(options =>
         options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
         options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
     })
-    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
+    {
+        options.Cookie.Name = ".AspNetCore.Cookies";
+        options.Cookie.SameSite = SameSiteMode.Lax;
+        options.Cookie.HttpOnly = true;
+        options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+    })
     .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
     {
         options.Authority = builder.Configuration["Keycloak:Authority"];
@@ -76,7 +82,7 @@ builder.Services.AddAuthentication(options =>
         {
             OnAuthenticationFailed = context =>
             {
-                context.Response.Redirect("/Home/Error"); // Redirect on failure
+                context.Response.Redirect("/Home/Error");
                 context.HandleResponse();
                 return Task.CompletedTask;
             },
