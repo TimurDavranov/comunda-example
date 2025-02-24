@@ -10,7 +10,7 @@ using Minio.DataModel.Args;
 
 namespace Camunda_TZ.Controllers;
 
-[Authorize]
+//[Authorize]
 public class TicketController(
     IDbContextFactory<AppDbContext> dbContextFactory,
     IMinioClientFactory minioClientFactory) : Controller

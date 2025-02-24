@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace Camunda_TZ.Controllers;
 
-[Authorize]
+//[Authorize]
 public class HomeController : Controller
 {
     public IActionResult Index()
