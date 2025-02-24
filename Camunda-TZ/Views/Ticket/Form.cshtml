@@ -1,0 +1,134 @@
+﻿@using Camunda_TZ.Entities
+@model Camunda_TZ.Models.TicketDto
+
+@{
+    ViewBag.Title = "Create";
+    Layout = "_Layout";
+}
+
+<form asp-action="Form" asp-controller="Ticket" method="post">
+    <div class="mb-3">
+        <label class="form-label">Имя клиента</label>
+        <div class="input-group">
+            <input type="text" class="form-control" asp-for="ClientName">
+        </div>
+        <span class="text-danger" asp-validation-for="ClientName"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Email клиента</label>
+        <div class="input-group">
+            <input type="text" class="form-control" asp-for="ClientEmail">
+        </div>
+        <span class="text-danger" asp-validation-for="ClientEmail"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Тема</label>
+        <div class="input-group">
+            <input type="text" class="form-control" asp-for="Title">
+        </div>
+        <span class="text-danger" asp-validation-for="Title"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Категория</label>
+        <div class="input-group">
+            <select class="form-control" asp-for="Type">
+                <option value="@TicketType.Consultation">@TicketType.Consultation.ToString()</option>
+                <option value="@TicketType.Incident">@TicketType.Incident.ToString()</option>
+                <option value="@TicketType.ServiceRequest">@TicketType.ServiceRequest.ToString()</option>
+            </select>
+        </div>
+        <span class="text-danger" asp-validation-for="Type"></span>
+    </div>
+    <div class="mb-3">
+        <label class="form-label">Описание</label>
+        <div class="input-group">
+            <textarea class="form-control" asp-for="Note"></textarea>
+        </div>
+        <span class="text-danger" asp-validation-for="Note"></span>
+    </div>
+
+    <h4>Attachments</h4>
+
+    <div class="mb-3">
+        <div class="d-flex justify-content-end">
+            <a class="btn btn-primary" id="uploadButton">Прикрепить файл</a>
+            <input type="file" multiple hidden="hidden" id="uploadElement"
+                   accept=".jpg, .png, .gif, .pdf, .txt, .doc, .docx, .xls, .xlsx"/>
+        </div>
+
+        <h5 class="mb-1 mt-2">Выбранные файлы</h5>
+
+        <div class="gap-2" id="fileContainer">
+            @if (Model.Attachments is not null && Model.Attachments.Any())
+            {
+                @for (var i = 0; i < Model.Attachments.Count; i++)
+                {
+                    var routeData = new Dictionary<string, string>()
+                    {
+                        { "bucket", Model.Attachments[i].Bucket },
+                        { "path", Model.Attachments[i].Path },
+                        { "storageName", Model.Attachments[i].StorageName },
+                        { "fileName", Model.Attachments[i].FileName }
+                    };
+
+                    <a class="btn btn-link" asp-action="Download" asp-all-route-data="routeData">@Model.Attachments[i].FileName</a>
+                    <input type="hidden" value="@Model.Attachments[i].Id" name="Attachments[@i].Id"/>
+                    <input type="hidden" value="@Model.Attachments[i].Bucket" name="Attachments[@i].Bucket"/>
+                    <input type="hidden" value="@Model.Attachments[i].Path" name="Attachments[@i].Path"/>
+                    <input type="hidden" value="@Model.Attachments[i].FileName" name="Attachments[@i].FileName"/>
+                    <input type="hidden" value="@Model.Attachments[i].StorageName" name="Attachments[@i].StorageName"/>
+                }
+            }
+        </div>
+    </div>
+    <div class="d-flex justify-content-end gap-2">
+        <button class="btn btn-primary" type="submit">Отправить</button>
+        <a class="btn btn-outline-secondary" asp-action="Index" asp-controller="Ticket">На главную страницу</a>
+    </div>
+</form>
+
+@section Scripts
+{
+    <script type="text/javascript">
+        const uploadButton = $("#uploadButton");
+        const uploadElement = $("#uploadElement");
+        const fileContainer = $("#fileContainer");
+
+        uploadButton.on('click', function () {
+            uploadElement.click();
+        });
+
+        uploadElement.on('change', function () {
+            const files = this.files;
+            if (files) {
+                fileContainer.empty();
+                $(files).each(async (index, item) => {
+                    let formData = new FormData();
+                    formData.append("file", item);
+                    const response = await fetch("@(Url.Action("Upload","Ticket"))", {
+                        method: "POST",
+                        body: formData
+                    });
+                    
+                    if (!response.ok){
+                        alert(response.statusText);
+                        return;
+                    }
+
+                    const result = await response.json();
+                    
+                    const downloadUrl = `@(Url.Action("Download","Ticket"))?bucket=${result.bucket}&path=${result.path}&storageName=${result.storageName}&fileName=${result.fileName}`;
+
+                    const html = `<a class="btn btn-link" href="${downloadUrl}">${item.name}</a>
+                        <input type="hidden" value="${result.id}" name="Attachments[${index}].Id"/>
+                        <input type="hidden" value="${result.bucket}" name="Attachments[${index}].Bucket""/>
+                        <input type="hidden" value="${result.path}" name="Attachments[${index}].Path""/>
+                        <input type="hidden" value="${result.fileName}" name="Attachments[${index}].FileName""/>
+                        <input type="hidden" value="${result.storageName}" name="Attachments[${index}].StorageName""/>`;
+                    
+                    fileContainer.append(html);
+                });
+            }
+        });
+    </script>
+}

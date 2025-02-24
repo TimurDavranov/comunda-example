@@ -1,0 +1,40 @@
+﻿@model List<Camunda_TZ.Models.TicketListDto>
+
+@{
+    ViewBag.Title = "title";
+    Layout = "_Layout";
+}
+
+<h2>Tickets</h2>
+
+<div class="d-flex justify-content-end">
+    <a class="btn btn-link" href="@Url.Action("Form", "Ticket")">Create</a>
+</div>
+
+<table class="table table-striped table-bordered">
+    <thead>
+    <tr>
+        <th>ClientName</th>
+        <th>ClientEmail</th>
+        <th>Title</th>
+        <th>Type</th>
+        <th>Status</th>
+        <th>Action</th>
+    </tr>
+    </thead>
+    <tbody>
+    @foreach (var ticket in Model)
+    {
+        <tr>
+            <td>@ticket.ClientName</td>
+            <td>@ticket.ClientEmail</td>
+            <td>@ticket.Title</td>
+            <td>@ticket.Type.ToString()</td>
+            <td>@ticket.Status.ToString()</td>
+            <td>
+                <a class="btn btn-link" asp-action="View" asp-route-id="@ticket.Id">View</a>
+            </td>
+        </tr>
+    }
+    </tbody>
+</table>

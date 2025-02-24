@@ -1,0 +1,77 @@
+﻿@using Camunda_TZ.Entities
+@using Microsoft.AspNetCore.Mvc.TagHelpers
+@model TicketDto
+
+@{
+    ViewBag.Title = "View";
+    Layout = "_Layout";
+}
+
+<div class="mb-3">
+    <label class="form-label">Имя клиента</label>
+    <div class="input-group">
+        <input readonly="readonly" type="text" class="form-control" asp-for="ClientName">
+    </div>
+</div>
+<div class="mb-3">
+    <label class="form-label">Email клиента</label>
+    <div class="input-group">
+        <input readonly="readonly" type="text" class="form-control" asp-for="ClientEmail">
+    </div>
+</div>
+<div class="mb-3">
+    <label class="form-label">Тема</label>
+    <div class="input-group">
+        <input readonly="readonly" type="text" class="form-control" asp-for="Title">
+    </div>
+</div>
+<div class="mb-3">
+    <label class="form-label">Категория</label>
+    <div class="input-group">
+        <input readonly="readonly" type="text" class="form-control" asp-for="Type">
+    </div>
+</div>
+<div class="mb-3">
+    <label class="form-label">Описание</label>
+    <div class="input-group">
+        <textarea class="form-control" asp-for="Note" readonly="readonly"></textarea>
+    </div>
+</div>
+
+<h4>Attachments</h4>
+
+<div class="mb-3">
+    <div class="gap-2">
+        @if (Model.Attachments is not null && Model.Attachments.Any())
+        {
+            foreach (var file in Model.Attachments)
+            {
+                var routeData = new Dictionary<string, string>()
+                {
+                    { "bucket", file.Bucket },
+                    { "path", file.Path },
+                    { "storageName", file.StorageName },
+                    { "fileName", file.FileName }
+                };
+
+                <a class="btn btn-link" asp-action="Download"
+                   asp-all-route-data="routeData">
+                    @file.FileName
+                </a>
+            }
+        }
+    </div>
+</div>
+<div class="d-flex justify-content-end gap-2">
+    <a class="btn btn-outline-secondary" asp-action="Index" asp-controller="Ticket">На главную страницу</a>
+</div>
+
+@if (Model.Status is not TicketStatus.New)
+{
+    <div class="mb-3">
+        <label class="form-label">Коментарий сотрудника ТП</label>
+        <div class="input-group">
+            <textarea class="form-control" asp-for="SupportNote" readonly="readonly"></textarea>
+        </div>
+    </div>
+}
