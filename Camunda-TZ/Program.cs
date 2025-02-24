@@ -70,6 +70,8 @@ builder.Services.AddAuthentication(options =>
         options.Scope.Add("openid");
         options.Scope.Add("profile");
         options.CallbackPath = "/signin-oidc";
+        options.NonceCookie.SameSite = SameSiteMode.Lax;
+        options.CorrelationCookie.SameSite = SameSiteMode.Lax;
         options.Events = new OpenIdConnectEvents
         {
             OnAuthenticationFailed = context =>
@@ -77,9 +79,21 @@ builder.Services.AddAuthentication(options =>
                 context.Response.Redirect("/Home/Error"); // Redirect on failure
                 context.HandleResponse();
                 return Task.CompletedTask;
+            },
+            OnRedirectToIdentityProvider = context =>
+            {
+                context.HttpContext.Response.Cookies.Delete(".AspNetCore.Correlation.oidc");
+                context.HttpContext.Response.Cookies.Delete(".AspNetCore.OpenIdConnect.Nonce");
+                return Task.CompletedTask;
             }
         };
     });
+
+builder.Services.ConfigureApplicationCookie(options =>
+{
+    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
+});
 
 var app = builder.Build();
 
