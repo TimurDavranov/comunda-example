@@ -28,7 +28,7 @@ public class HomeController(IConfiguration configuration) : Controller
         
         await HttpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
 
-        var authUrl = configuration["Keycloak:Authority"]?.TrimEnd('/').TrimEnd();
+        var authUrl = configuration["Keycloak:Authority"]?.TrimEnd('/').Trim();
 
         var logoutUrl = $"{authUrl}/protocol/openid-connect/logout";
         var postLogoutRedirectUri = Url.Action("Index", "Home", null, "http");
