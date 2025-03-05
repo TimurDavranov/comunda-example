@@ -68,43 +68,21 @@ builder.Services.AddAuthentication(options =>
         options.Scope.Add("openid");
         options.Scope.Add("profile");
         options.Scope.Add("email");
+        
+        options.CorrelationCookie.MaxAge = TimeSpan.FromMinutes(15);
+
         options.Events = new OpenIdConnectEvents
         {
-            OnRedirectToIdentityProvider = context =>
-            {
-                Console.WriteLine("Redirecting to Keycloak...");
-                return Task.CompletedTask;
-            },
-            OnMessageReceived = context =>
-            {
-                Console.WriteLine("Message received from Keycloak...");
-                return Task.CompletedTask;
-            },
-            OnTokenValidated = context =>
-            {
-                Console.WriteLine("Token validated...");
-                return Task.CompletedTask;
-            },
             OnAuthenticationFailed = context =>
             {
                 Console.WriteLine("Authentication failed: " + context.Exception.Message);
                 return Task.CompletedTask;
             }
         };
+
     });
 
-builder.Services.ConfigureApplicationCookie(options =>
-{
-    options.Cookie.SameSite = SameSiteMode.Lax;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.None;
-});
-
 var app = builder.Build();
-
-app.UseCookiePolicy(new CookiePolicyOptions()
-{
-    MinimumSameSitePolicy = SameSiteMode.Lax
-});
 
 var db = app.Services.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
 db.Database.Migrate();
