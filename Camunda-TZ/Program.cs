@@ -101,6 +101,11 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 var app = builder.Build();
 
+app.UseCookiePolicy(new CookiePolicyOptions()
+{
+    MinimumSameSitePolicy = SameSiteMode.Lax
+});
+
 var db = app.Services.GetRequiredService<IDbContextFactory<AppDbContext>>().CreateDbContext();
 db.Database.Migrate();
 db.Dispose();
