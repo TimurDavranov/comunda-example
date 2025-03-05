@@ -28,7 +28,10 @@
                     </li>
                 </ul>
                 <a class="navbar-brand">@Context.User.FindFirstValue(ClaimTypes.GivenName)</a>
-                <a asp-action="Logout" asp-controller="Home">Logout</a>
+                @if (Context.User.Identity?.IsAuthenticated == true)
+                {
+                    <a asp-action="Logout" asp-controller="Home">Logout</a>
+                }
             </div>
         </div>
     </nav>

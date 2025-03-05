@@ -1,9 +1,7 @@
 using Camunda_TZ.Services;
-using Microsoft.AspNetCore.Authentication.Cookies;
-using Microsoft.AspNetCore.Authentication.OpenIdConnect;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Logging;
-using Microsoft.IdentityModel.Tokens;
+using Microsoft.IdentityModel.Protocols.OpenIdConnect;
 using Minio;
 using Zeebe.Client;
 
@@ -53,47 +51,22 @@ IdentityModelEventSource.ShowPII = true;
 
 builder.Services.AddAuthentication(options =>
     {
-        options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
-        options.DefaultChallengeScheme = OpenIdConnectDefaults.AuthenticationScheme;
+        options.DefaultScheme = "Cookies";
+        options.DefaultChallengeScheme = "oidc";
     })
-    .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
-    {
-        options.Cookie.Name = ".AspNetCore.Cookies";
-        options.Cookie.SameSite = SameSiteMode.Lax;
-        options.Cookie.HttpOnly = true;
-        options.Cookie.SecurePolicy = CookieSecurePolicy.None;
-        options.Cookie.Domain = "144.91.122.220";
-    })
-    .AddOpenIdConnect(OpenIdConnectDefaults.AuthenticationScheme, options =>
+    .AddCookie("Cookies")
+    .AddOpenIdConnect("oidc", options =>
     {
         options.Authority = builder.Configuration["Keycloak:Authority"];
         options.ClientId = builder.Configuration["Keycloak:ClientId"];
         options.ClientSecret = builder.Configuration["Keycloak:ClientSecret"];
-        options.RequireHttpsMetadata = builder.Configuration.GetValue<bool>("Keycloak:RequireHttpsMetadata");
-        options.ResponseType = "code";
+        options.RequireHttpsMetadata = false;
+        options.ResponseType = OpenIdConnectResponseType.Code;
         options.SaveTokens = true;
         options.GetClaimsFromUserInfoEndpoint = true;
-        options.Scope.Clear();
         options.Scope.Add("openid");
         options.Scope.Add("profile");
-        options.CallbackPath = "/signin-oidc";
-        options.NonceCookie.SameSite = SameSiteMode.Lax;
-        options.CorrelationCookie.SameSite = SameSiteMode.Lax;
-        options.Events = new OpenIdConnectEvents
-        {
-            OnAuthenticationFailed = context =>
-            {
-                context.Response.Redirect("/Home/Error");
-                context.HandleResponse();
-                return Task.CompletedTask;
-            },
-            OnRedirectToIdentityProvider = context =>
-            {
-                context.HttpContext.Response.Cookies.Delete(".AspNetCore.Correlation.oidc");
-                context.HttpContext.Response.Cookies.Delete(".AspNetCore.OpenIdConnect.Nonce");
-                return Task.CompletedTask;
-            }
-        };
+        options.Scope.Add("email");
     });
 
 builder.Services.ConfigureApplicationCookie(options =>
